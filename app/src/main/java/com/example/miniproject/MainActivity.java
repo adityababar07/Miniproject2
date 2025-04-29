@@ -23,6 +23,11 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        new Thread(() -> {
+            MQTTClient.connect();
+
+        }).start();
+
         Switch onOffSwitch = (Switch)  findViewById(R.id.switch1);
         onOffSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
@@ -31,10 +36,31 @@ public class MainActivity extends AppCompatActivity {
                 Log.v("Switch State=", ""+isChecked);
                 if (isChecked){
                     Log.v("on", ""+isChecked);
-
+                    MQTTClient.sendMessage("on");
                 }
                 else{
                     Log.v("off", ""+isChecked);
+                    MQTTClient.sendMessage("off");
+
+                }
+            }
+
+        });
+
+        Switch onOffSwitch1 = (Switch)  findViewById(R.id.switch2);
+        onOffSwitch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.v("Switch State=", ""+isChecked);
+                if (isChecked){
+                    Log.v("on1", ""+isChecked);
+                    MQTTClient.sendMessage("on1");
+                }
+                else{
+                    Log.v("off1", ""+isChecked);
+                    MQTTClient.sendMessage("off1");
+
                 }
             }
 
