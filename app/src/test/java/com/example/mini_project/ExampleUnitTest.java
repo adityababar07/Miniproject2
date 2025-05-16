@@ -1,4 +1,4 @@
-package com.example.miniproject;
+package com.example.mini_project;
 
 import org.junit.Test;
 

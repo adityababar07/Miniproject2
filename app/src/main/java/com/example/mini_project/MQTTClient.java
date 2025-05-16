@@ -1,4 +1,4 @@
-package com.example.miniproject;
+package com.example.mini_project;
 
 
 
@@ -6,15 +6,11 @@ package com.example.miniproject;
 
 import android.util.Log;
 
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-
-import java.io.IOException;
 
 public class MQTTClient {
 
@@ -24,6 +20,9 @@ public class MQTTClient {
     public static final String username = "adityababar";
     public static final String password = "9gT5bJhEzpAZAfW";
     public static final String mqttTopic = "miniproject/home";
+    public static final String mqttTopic1 = "miniproject/home/dht/temperature";
+    public static final String mqttTopic2 = "miniproject/home/dht/humidity";
+    public static final String mqttTopic3 = "miniproject/home/intrusion";
 
     public static MemoryPersistence persistence = new MemoryPersistence();
 
@@ -46,12 +45,15 @@ public class MQTTClient {
             mqttClient = new MqttClient(mqttBroker, clientId, persistence);
 
             // callback
-            mqttClient.setCallback(new SampleCallback());
+            mqttClient.setCallback(new SampleCallBack());
             System.out.println("Connecting to broker: " + mqttBroker);
             mqttClient.connect(connOpts);
             System.out.println("Connected to broker: " + mqttBroker);
 
             mqttClient.subscribe(mqttTopic, qos);
+            mqttClient.subscribe(mqttTopic1, qos);
+            mqttClient.subscribe(mqttTopic2, qos);
+            mqttClient.subscribe(mqttTopic3, qos);
             System.out.println("Subscribed to topic: " + mqttTopic);
             Log.v("Subscribed to topic: " + mqttTopic, "");
             /* Keep the application open, so that the subscribe operation can tested */

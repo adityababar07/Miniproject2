@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MiniProject"
+rootProject.name = "mini_project"
 include(":app")
  

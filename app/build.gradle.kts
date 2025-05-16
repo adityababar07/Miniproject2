@@ -3,12 +3,12 @@ plugins {
 }
 
 android {
-    namespace = "com.example.miniproject"
+    namespace = "com.example.mini_project"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.miniproject"
-        minSdk = 30
+        applicationId = "com.example.mini_project"
+        minSdk = 25
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -29,16 +29,20 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
 
     implementation(libs.appcompat)
     implementation(libs.material)
-    implementation(libs.activity)
     implementation(libs.constraintlayout)
-//    The first line is for the core MQTT client library.
-//    The second line is the Android Service implementation
+    implementation(libs.lifecycle.livedata.ktx)
+    implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.navigation.fragment)
+    implementation(libs.navigation.ui)
     implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.4")
     implementation("org.eclipse.paho:org.eclipse.paho.android.service:1.1.1")
     testImplementation(libs.junit)
