@@ -1,6 +1,9 @@
 package com.example.mini_project;
 
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -58,48 +61,19 @@ public class Main2Activity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-        new Thread(() -> {
-            MQTTClient.connect();
-
-        }).start();
-
-        Switch onOffSwitch = (Switch)  findViewById(R.id.switch1);
-        onOffSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.v("Switch State=", ""+isChecked);
-                if (isChecked){
-                    Log.v("on", ""+isChecked);
-                    MQTTClient.sendMessage("on");
-                }
-                else{
-                    Log.v("off", ""+isChecked);
-                    MQTTClient.sendMessage("off");
-
-                }
+//        new Thread(() -> {
+//
+//
+//        }).start();
+        startService(new Intent(this, MQTTClient.class));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (!notificationManager.isNotificationPolicyAccessGranted()) {
+                Intent intent = new Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
+                startActivity(intent);  // user has to manually allow it
             }
+        }
 
-        });
-
-        Switch onOffSwitch1 = (Switch)  findViewById(R.id.switch2);
-        onOffSwitch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.v("Switch State=", ""+isChecked);
-                if (isChecked){
-                    Log.v("on1", ""+isChecked);
-                    MQTTClient.sendMessage("on1");
-                }
-                else{
-                    Log.v("off1", ""+isChecked);
-                    MQTTClient.sendMessage("off1");
-
-                }
-            }
-
-        });
     }
 
     @Override

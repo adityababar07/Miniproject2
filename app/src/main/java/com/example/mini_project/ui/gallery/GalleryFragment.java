@@ -42,8 +42,8 @@ public class GalleryFragment extends Fragment {
         });
         final TextView textView = binding.textGallery;
         final TextView textView1 = binding.textGallery1;
-        galleryViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
-        galleryViewModel.getText().observe(getViewLifecycleOwner(), textView1::setText);
+        galleryViewModel.getTemperatureText().observe(getViewLifecycleOwner(), textView::setText);
+        galleryViewModel.getHumidityText().observe(getViewLifecycleOwner(), textView1::setText);
 
         return root;
     }

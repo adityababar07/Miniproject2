@@ -1,18 +1,27 @@
 package com.example.mini_project;
 
-
-
-//import android.content.Context;
-
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.Service;
+import android.content.Intent;
+import android.os.Build;
+import android.os.IBinder;
 import android.util.Log;
+import androidx.core.app.NotificationCompat;
 
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-public class MQTTClient {
+public class MQTTClient extends Service {
+
+    public static final String CHANNEL_ID = "mqtt_alarm_channel";
+    public static final int NOTIF_ID = 1001;
 
     public static final int qos = 0;
     public static final String mqttBroker = "tcp://broker.emqx.io:1883";
@@ -24,49 +33,70 @@ public class MQTTClient {
     public static final String mqttTopic2 = "miniproject/home/dht/humidity";
     public static final String mqttTopic3 = "miniproject/home/intrusion";
 
-    public static MemoryPersistence persistence = new MemoryPersistence();
+    private static MqttClient mqttClient;
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        createNotificationChannel();
+        startForeground(NOTIF_ID, getNotification("MQTT Service Running"));
+        connect();
+    }
 
-    public static MqttClient mqttClient ;
+    private Notification getNotification(String content) {
+        return new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("MQTT Alarm")
+                .setContentText(content)
+                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+                .build();
+    }
 
-    public static void connect() {
-        // MQTT connect options
-        MqttConnectOptions connOpts = new MqttConnectOptions();
-        // authentication
-        connOpts.setUserName(username);
-        connOpts.setPassword(password.toCharArray());
-        connOpts.setKeepAliveInterval(60);
-        connOpts.setAutomaticReconnect(true);
-        connOpts.setCleanSession(true);
-//        String content = "Hi from the Java application";
-
-        try {
-//            MqttClient mqttClient = new MqttClient(mqttBroker, clientId, persistence);
-            mqttClient = new MqttClient(mqttBroker, clientId, persistence);
-
-            // callback
-            mqttClient.setCallback(new SampleCallBack());
-            System.out.println("Connecting to broker: " + mqttBroker);
-            mqttClient.connect(connOpts);
-            System.out.println("Connected to broker: " + mqttBroker);
-
-            mqttClient.subscribe(mqttTopic, qos);
-            mqttClient.subscribe(mqttTopic1, qos);
-            mqttClient.subscribe(mqttTopic2, qos);
-            mqttClient.subscribe(mqttTopic3, qos);
-            System.out.println("Subscribed to topic: " + mqttTopic);
-            Log.v("Subscribed to topic: " + mqttTopic, "");
-            /* Keep the application open, so that the subscribe operation can tested */
-//            System.out.println("Press Enter to disconnect");
-//            System.in.read();
-            /* Proceed with disconnecting */
-//            mqttClient.disconnect();
-//            mqttClient.close();
-
-        } catch (MqttException e) {
-            e.printStackTrace();
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "MQTT Alarm Channel",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription("MQTT Alarm Notifications");
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
         }
     }
+
+    public void connect() {
+        new Thread(() -> {
+            try {
+                mqttClient = new MqttClient(mqttBroker, clientId, new MemoryPersistence());
+
+                // callback
+                mqttClient.setCallback(new SampleCallBack(getApplicationContext()));
+                MqttConnectOptions connOpts = new MqttConnectOptions();
+                connOpts.setUserName(username);
+                connOpts.setPassword(password.toCharArray());
+                connOpts.setKeepAliveInterval(60);
+                connOpts.setAutomaticReconnect(true);
+                connOpts.setCleanSession(false);
+
+//                mqttClient.setCallback(new  SampleCallBack(getApplicationContext()));
+
+                Log.i("MQTT", "Connecting to broker: " + mqttBroker);
+                mqttClient.connect(connOpts);
+                Log.i("MQTT", "Connected to broker: " + mqttBroker);
+
+                mqttClient.subscribe(mqttTopic, qos);
+                mqttClient.subscribe(mqttTopic1, qos);
+                mqttClient.subscribe(mqttTopic2, qos);
+                mqttClient.subscribe(mqttTopic3, qos);
+
+                Log.i("MQTT", "Subscribed to topics.");
+            } catch (MqttException e) {
+                Log.e("MQTT", "Error connecting/subscribing", e);
+            }
+        }).start();
+    }
+
+
     public static void sendMessage(String content) {
         try {
             if (mqttClient != null && mqttClient.isConnected()) {
@@ -86,4 +116,27 @@ public class MQTTClient {
         }
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // Service will be restarted if killed
+        return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        try {
+            if (mqttClient != null && mqttClient.isConnected()) {
+                mqttClient.disconnect();
+                mqttClient.close();
+            }
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
 }

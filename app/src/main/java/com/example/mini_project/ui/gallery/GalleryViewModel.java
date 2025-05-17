@@ -6,14 +6,22 @@ import androidx.lifecycle.ViewModel;
 
 public class GalleryViewModel extends ViewModel {
 
-    private final MutableLiveData<String> mText;
+    private final MutableLiveData<String> humidityText;
+    private final MutableLiveData<String> temperatureText;
 
     public GalleryViewModel() {
-        mText = new MutableLiveData<>();
-        mText.setValue("This is gallery fragment");
+        humidityText = new MutableLiveData<>();
+        temperatureText = new MutableLiveData<>();
+
+        humidityText.setValue("Humidity: 0%");
+        temperatureText.setValue("Temperature: 0°C");
     }
 
-    public LiveData<String> getText() {
-        return mText;
+    public LiveData<String> getHumidityText() {
+        return humidityText;
+    }
+
+    public LiveData<String> getTemperatureText() {
+        return temperatureText;
     }
 }
